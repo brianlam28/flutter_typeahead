@@ -3,6 +3,7 @@ import 'dart:math';
 
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:flutter_typeahead/flutter_typeahead.dart';
 import 'package:flutter_typeahead/src/keyboard_suggestion_selection_notifier.dart';
 import 'package:flutter_typeahead/src/should_refresh_suggestion_focus_index_notifier.dart';
 import 'package:flutter_typeahead/src/material/suggestions_box/suggestions_box.dart';
@@ -14,6 +15,7 @@ import 'package:pointer_interceptor/pointer_interceptor.dart';
 /// `layoutArchitecture` is specified, uses that instead.
 class SuggestionsList<T> extends StatefulWidget {
   final SuggestionsBox? suggestionsBox;
+  final SuggestionsBoxController<T>? suggestionsController;
   final TextEditingController? controller;
   final bool getImmediateSuggestions;
   final SuggestionSelectionCallback<T>? onSuggestionSelected;
@@ -57,6 +59,7 @@ class SuggestionsList<T> extends StatefulWidget {
     this.itemSeparatorBuilder,
     this.layoutArchitecture,
     this.scrollController,
+    this.suggestionsController,
     this.decoration,
     this.debounceDuration,
     this.loadingBuilder,
@@ -97,6 +100,8 @@ class _SuggestionsListState<T> extends State<SuggestionsList<T>>
       widget.scrollController ?? ScrollController();
   List<FocusNode> _focusNodes = [];
   int _suggestionIndex = -1;
+  StreamSubscription? _suggestionSubscription;
+  bool _shouldGetSuggestionFromController = false;
 
   _SuggestionsListState() {
     this._controllerListener = () {
@@ -193,6 +198,13 @@ class _SuggestionsListState<T> extends State<SuggestionsList<T>>
         _suggestionIndex = -1;
       }
     });
+
+    _suggestionSubscription =
+        widget.suggestionsController?.stream.listen((event) {
+      _suggestionsValid = false;
+      _shouldGetSuggestionFromController = true;
+      _getSuggestions(suggestionsFromController: event);
+    });
   }
 
   Future<void> invalidateSuggestions() async {
@@ -200,7 +212,7 @@ class _SuggestionsListState<T> extends State<SuggestionsList<T>>
     await _getSuggestions();
   }
 
-  Future<void> _getSuggestions() async {
+  Future<void> _getSuggestions({List<T>? suggestionsFromController}) async {
     if (_suggestionsValid) return;
     _suggestionsValid = true;
 
@@ -216,8 +228,13 @@ class _SuggestionsListState<T> extends State<SuggestionsList<T>>
       Object? error;
 
       try {
-        suggestions =
-            await widget.suggestionsCallback!(widget.controller!.text);
+        if (_shouldGetSuggestionFromController) {
+          suggestions = suggestionsFromController;
+          _shouldGetSuggestionFromController = false;
+        } else {
+          suggestions =
+              await widget.suggestionsCallback!(widget.controller!.text);
+        }
       } catch (e) {
         error = e;
       }
@@ -253,6 +270,7 @@ class _SuggestionsListState<T> extends State<SuggestionsList<T>>
     for (final focusNode in _focusNodes) {
       focusNode.dispose();
     }
+    _suggestionSubscription?.cancel();
     super.dispose();
   }
 

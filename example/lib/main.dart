@@ -76,8 +76,16 @@ class _MyAppState extends State<MyApp> {
   }
 }
 
-class NavigationExample extends StatelessWidget {
+class NavigationExample extends StatefulWidget {
   const NavigationExample({super.key});
+
+  @override
+  State<NavigationExample> createState() => _NavigationExampleState();
+}
+
+class _NavigationExampleState extends State<NavigationExample> {
+  SuggestionsBoxController<Map<String, String>> _controller =
+      SuggestionsBoxController();
 
   @override
   Widget build(BuildContext context) {
@@ -85,8 +93,15 @@ class NavigationExample extends StatelessWidget {
       padding: const EdgeInsets.all(32.0),
       child: Column(
         children: [
+          ElevatedButton(
+              onPressed: () async {
+                final newItems = await BackendService.getSuggestions('New');
+                _controller.updateSuggestions(newItems);
+              },
+              child: Text('Change')),
           const SizedBox(height: 10.0),
           TypeAheadField(
+            suggestionsBoxController: _controller,
             textFieldConfiguration: TextFieldConfiguration(
               autofillHints: ["AutoFillHints 1", "AutoFillHints 2"],
               autofocus: true,

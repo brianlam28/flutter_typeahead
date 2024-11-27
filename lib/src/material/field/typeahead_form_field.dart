@@ -42,7 +42,7 @@ class TypeAheadFormField<T> extends FormField<String> {
     Duration debounceDuration = const Duration(milliseconds: 300),
     SuggestionsBoxDecoration suggestionsBoxDecoration =
         const SuggestionsBoxDecoration(),
-    SuggestionsBoxController? suggestionsBoxController,
+    SuggestionsBoxController<T>? suggestionsBoxController,
     required SuggestionSelectionCallback<T> onSuggestionSelected,
     required ItemBuilder<T> itemBuilder,
     IndexedWidgetBuilder? itemSeparatorBuilder,

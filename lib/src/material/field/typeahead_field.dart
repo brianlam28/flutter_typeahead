@@ -328,7 +328,7 @@ class TypeAheadField<T> extends StatefulWidget {
 
   /// Used to control the `_SuggestionsBox`. Allows manual control to
   /// open, close, toggle, or resize the `_SuggestionsBox`.
-  final SuggestionsBoxController? suggestionsBoxController;
+  final SuggestionsBoxController<T>? suggestionsBoxController;
 
   /// The duration to wait after the user stops typing before calling
   /// [suggestionsCallback]
@@ -774,6 +774,7 @@ class _TypeAheadFieldState<T> extends State<TypeAheadField<T>>
         }
 
         final suggestionsList = SuggestionsList<T>(
+          suggestionsController: widget.suggestionsBoxController,
           suggestionsBox: _suggestionsBox,
           decoration: widget.suggestionsBoxDecoration,
           debounceDuration: widget.debounceDuration,
