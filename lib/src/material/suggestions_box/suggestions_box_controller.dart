@@ -10,7 +10,8 @@ class SuggestionsBoxController<T> {
   FocusNode? effectiveFocusNode;
 
   // Create a StreamController
-  final StreamController<List<T>?> _controller = StreamController<List<T>?>();
+  final StreamController<List<T>?> _controller =
+      StreamController<List<T>?>.broadcast();
 
   // Expose the stream
   Stream<List<T>?> get stream => _controller.stream;
